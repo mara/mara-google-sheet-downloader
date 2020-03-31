@@ -1,4 +1,4 @@
-# Mara Data Integration
+# Mara Google Sheet Downloader
 
 [![Build Status](https://travis-ci.org/mara/mara-google-sheet-downloader.svg?branch=master)](https://travis-ci.org/mara/mara-google-sheet-downloader)
 [![PyPI - License](https://img.shields.io/pypi/l/mara-google-sheet-downloader.svg)](https://github.com/mara/mara-google-sheet-downloader/blob/master/LICENSE)
@@ -31,8 +31,9 @@ pip install git+https://github.com/mara/mara-google-sheet-downloader.git
 
 ## Example
 
-Here is a pipeline "gs_demo" which downloads to a table. This assumes you have a spead sheet shared
-with the account you configured (see below) under the URL https://docs.google.com/spreadsheets/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/edit.
+Here is a pipeline "gs_demo" which downloads to a table. This assumes you have a spread sheet under the
+URL https://docs.google.com/spreadsheets/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/edit. This sheet must be shared with the
+email address for which you configured the credentials (see below).
 
 The spreadsheet contains a worksheet 'test' which contains the following colums:
 
@@ -41,8 +42,6 @@ The spreadsheet contains a worksheet 'test' which contains the following colums:
 |Berlin | 01.01.2020 | 3 | ja | 2.3 | added by JK on 2020-03-12 |
 
 Note that it doesn't contain an id column at the start!
-
-
 
 ```python
 from data_integration.pipelines import Pipeline, Task
@@ -95,8 +94,11 @@ comments TEXT
 ## Config
 
 The downloader needs OAuth2 credentials, either use a service account or a user account.
-* For Service Accounts, see https://gspread.readthedocs.io/en/latest/oauth2.html
-* For user account credentials, see https://developers.google.com/sheets/api/quickstart/python, Step 1. For getting the initial refresh token, you can use `flask mara_google_sheet_downloader.generate-user-refresh-token /path/to/downloaded/credential.json`
+* For service accounts, see https://gspread.readthedocs.io/en/latest/oauth2.html. All required information is in the
+  downloaded json file.
+* For user account credentials, see https://developers.google.com/sheets/api/quickstart/python, Step 1.
+  For getting the initial refresh token, you can use
+  `flask mara_google_sheet_downloader.generate-user-refresh-token /path/to/downloaded/credential.json`
 
 Credentials will need the scopes `'https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly'`.
 
@@ -110,10 +112,17 @@ patch(mara_google_sheet_downloader.config.gs_user_account_client_secret)(lambda:
 patch(mara_google_sheet_downloader.config.gs_user_account_refresh_token)(lambda:"...initial_refresh_token...")
 ```
 
+## Setup access to sheets to be downloaded
+
+All sheets which should be accessed by the downloader must be shared with the email address associated with these
+credentials. This email address is:
+
+* for user account credentials: the email address of the user who created the credentials.
+* for service accounts: the email address of the service account itself (e.g. "*@*.iam.gserviceaccount.com").
+  This email address is e.g. included in the json file you can download.
+
 ## CLI
 
-This package also contains a small cli app which downlaods a google sheet and ouputs it as csv.
+This package contains a small cli app which downloads a google sheet and outputs it as csv.
 
 You can use it stand alone, see `python -m mara_google_sheet_downloader --help ` for how to use it.
-
-
