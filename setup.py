@@ -10,7 +10,7 @@ def get_long_description():
 
 setup(
     name='mara-google-sheet-downloader',
-    version='2.7.0',
+    version='0.1.0',
 
     description='Opinionated lightweight ETL pipeline framework',
 
