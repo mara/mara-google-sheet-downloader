@@ -9,3 +9,14 @@ matrix:
 install:
   - pip install .[test]
 script: pytest
+deploy:
+  provider: pypi
+  distributions: sdist
+  user: mara-pypi-upload-account
+  password:
+    secure: Kex1855mB5a7qMUEWdfv2ikQNWCN3kV5Xmwp7yeh4RVghLj9oYl2wjDnkcoeI58eOvZnznyGIzR0yQS7DewdoHAbasAPBLGUctYbaFmssjngkWFaTr85r0A3KBy5CxsjMgbtBRFw6FuQ/mttMne1u9ToAPVpIQcH3jOBjQly0I/OCnXS/nZn2BOk6ZtaXcdnvlWDUoNQyt6vU4o2ASegqM/o9t+MNpCevi3HsZVqP4KklagpR9Xs842OTYHAAfyZnxQF7Hxm4/SLnW6mrE7jeoLQrEW4dmp16mVoCS61tCwIuPahiSQZFWllgXC3v7a7Mw4STlUbxSOII7SRZ/G7HMLg+AA986bhU4QrdAlQN9q0Z2i0DX7QZ4qyjqm+T9GZpt2qvsERMXu5KWJkrCAslr8bOcgp4PNJDvgLtAKmqNcRDWniU4osAZb6IavVk1grzefi5sXz38Q/LNLdyZ0BVBM2nkjGP93QdJQtllnikWhWLOgcm60reU+oE1tKOk/67t+1bvndXPgUvIGbk7Th7lYgjo6N+KE0x1XqSHUH63w3F661jkW6jbqe7exSQYM94Orf85Fu0VEV7gmPBTnWBNRYFsVaXt9+3wGpZMQh3l2nSmwkevbt5dTym4TFcYOF/Bxnp7ZmHYnzXhIpwBAPuz1dVonSeqDa4bRnnz/9mK8=
+  on:
+    tags: true
+    branch: master
+    repo: mara/mara-google-sheet-downloader
+    condition: "$UPLOAD == True"
