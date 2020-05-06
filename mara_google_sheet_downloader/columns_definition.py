@@ -428,6 +428,7 @@ def write_rows_as_csv_to_stream(rows: t.Union[t.Sequence[t.List[str]], t.Iterato
 
     csv_writer = csv.writer(stream, dialect=dialect)
 
+    n_rows = 0
     for row in rows:
         if len(''.join(row)) > 0:
             buf = []
@@ -452,3 +453,4 @@ def write_rows_as_csv_to_stream(rows: t.Union[t.Sequence[t.List[str]], t.Iterato
                 raise ValueError(f'Row contains bad data: {row} ({str(e.args)})')
 
             csv_writer.writerow(buf)
+    return n_rows

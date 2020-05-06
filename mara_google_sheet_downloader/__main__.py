@@ -46,6 +46,10 @@ from .columns_definition import write_rows_as_csv_to_stream
               default='\t',
               show_default="\\t",
               required=False)
+@click.option('--fail-on-no-data/--no-fail-on-no-data',
+              help='Toggle to fail if no data is received.',
+              default=True,
+              required=False)
 def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_definition: str,
                        skip_rows: int,
                        delimiter_char: str = '\t',
@@ -56,6 +60,7 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
                        user_account_client_id: str = None,
                        user_account_client_secret: str = None,
                        user_account_refresh_token: str = None,
+                       fail_on_no_data: bool = True
                        ):
     """Download a google sheet as CSV to stdout
 
@@ -126,13 +131,15 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
             continue
 
     stream = sys.stdout
-
-    write_rows_as_csv_to_stream(rows,
+    nrows = write_rows_as_csv_to_stream(rows,
                                 columns_definition=columns_definition,
                                 stream=stream,
                                 delimiter_char=delimiter_char)
-
     stream.flush()
+
+    if fail_on_no_data and nrows == 0:
+            raise ValueError("Received no data rows, failing")
+
 
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']

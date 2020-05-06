@@ -18,7 +18,8 @@ class DownloadGoogleSpreadsheet(pipelines.Command):
                  target_table_name: str,
                  target_db_alias: str = 'dwh',
                  skip_rows: int = 1,
-                 use_flask_command: bool = False
+                 use_flask_command: bool = False,
+                 fail_on_no_data: bool = False
                  ) -> None:
         """
         Downloads a google spreadsheet to a table
@@ -37,6 +38,7 @@ class DownloadGoogleSpreadsheet(pipelines.Command):
                                module in the app.py import path to make the command available (any print() in that path
                                will fail the download). If True, the credentials needed in the downloader itself are
                                directly taken from the config, not passed in via commandline arguments.
+            fail_on_no_data: bool=True, if true fail on no data rows received
 
         """
         self.spreadsheet_key = spreadsheet_key
@@ -47,6 +49,7 @@ class DownloadGoogleSpreadsheet(pipelines.Command):
         self.skip_rows = skip_rows
         self.delimiter_char = '\t'
         self.use_flask_command = use_flask_command
+        self.fail_on_no_data = fail_on_no_data
 
     def run(self) -> bool:
         logger.log(
@@ -60,7 +63,8 @@ class DownloadGoogleSpreadsheet(pipelines.Command):
     def shell_command(self):
         return (gs_downloader_shell_command(self.spreadsheet_key, self.worksheet_name, self.columns_definition,
                                             skip_rows=self.skip_rows, delimiter_char=self.delimiter_char,
-                                            use_flask_command=self.use_flask_command)
+                                            use_flask_command=self.use_flask_command,
+                                            fail_on_no_data=self.fail_on_no_data)
                 + f'{_shell_linebreak_escape}| '
                 + mara_db.shell.copy_from_stdin_command(self.target_db_alias, target_table=self.target_table_name,
                                                         null_value_string='', csv_format=True,
@@ -76,7 +80,8 @@ class DownloadGoogleSpreadsheet(pipelines.Command):
             ('target table name', _.pre[escape(self.target_table_name)]),
             ('target db', _.pre[escape(self.target_db_alias)]),
             ('Number of rows to skip', _.pre[str(self.skip_rows)]),
-            ('Invocation', _.pre[_invocation(self.use_flask_command)])
+            ('Invocation', _.pre[_invocation(self.use_flask_command)]),
+            ('Fail on no data', _.pre[str(self.fail_on_no_data)]),
         ]
 
 
@@ -100,6 +105,7 @@ def gs_downloader_shell_command(spreadsheet_key: str,
                                 skip_rows: int = 1,
                                 delimiter_char: str = '\t',
                                 use_flask_command: bool = True,
+                                fail_on_no_data: bool = True,
                                 ):
     """
     Downloads a google spreadsheet to a table
@@ -116,6 +122,7 @@ def gs_downloader_shell_command(spreadsheet_key: str,
                            to make the command available and this can potentially print something which would make
                            the import fail. If True, the credentials are directly taken from the config,
                            not passed in via commandline arguments.
+        fail_on_no_data: bool=True, if true fail on no data rows received
     """
     command = []
     command.extend([
@@ -127,6 +134,7 @@ def gs_downloader_shell_command(spreadsheet_key: str,
         f" --columns-definition='{columns_definition}'",
         f' --skip-rows={skip_rows}',
         f" --delimiter-char='{delimiter_char}'",
+        f' --fail-on-no-data' if fail_on_no_data else f' --no-fail-on-no-data'
     ])
     if not use_flask_command:
         if c.gs_service_account_client_id():
