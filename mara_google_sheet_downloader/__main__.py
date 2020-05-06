@@ -99,10 +99,8 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
     else:
         raise RuntimeError("Need either credentials for a google user account or for a google service account")
 
-    stream = sys.stdout
-
     overall_tries = 0
-    while overall_tries < 3:
+    while True:
         try:
             # Connect to google sheets
             client = gspread.authorize(credentials)
@@ -112,20 +110,28 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
 
             for _ in range(skip_rows):
                 # just pop the rows without outputting them!
-                next(rows)
-
-            write_rows_as_csv_to_stream(rows,
-                                        columns_definition=columns_definition,
-                                        stream=stream,
-                                        delimiter_char=delimiter_char)
+                try:
+                    next(rows)
+                except StopIteration:
+                    raise ValueError(f"Expected {skip_rows} header rows, but not all were there.")
             break
-        except gspread.exceptions.APIError as e:
-            # too many requests per time frame -> wait a bit and try again
+        except Exception as e:
+            # too many requests per time frame or some API down or so -> wait a bit and try again
             if overall_tries > 3:
                 raise e
+            print(f'Got exception, but will retry again: {e!r}', file=sys.stderr, flush=True)
             sleep_seconds = 10 * (overall_tries + 1)
             time.sleep(sleep_seconds)
             overall_tries += 1
+            continue
+
+    stream = sys.stdout
+
+    write_rows_as_csv_to_stream(rows,
+                                columns_definition=columns_definition,
+                                stream=stream,
+                                delimiter_char=delimiter_char)
+
     stream.flush()
 
 
