@@ -9,6 +9,7 @@ Mainly to be used with mara to import a Google Sheet to a database table.
 
 import click
 import sys
+import random
 
 import time
 import gspread
@@ -105,6 +106,7 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
         raise RuntimeError("Need either credentials for a google user account or for a google service account")
 
     overall_tries = 0
+    api_errors = 0
     while True:
         try:
             # Connect to google sheets
@@ -120,26 +122,35 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
                 except StopIteration:
                     raise ValueError(f"Expected {skip_rows} header rows, but not all were there.")
             break
+        except gspread.exceptions.APIError as apie:
+            # these happen when the API got too many requests with this credentials in 100 seconds
+            # 10 times might be a bit much but this is better than failing just because you have a lot of
+            # gs downloads or some local dev loads at the same time
+            if api_errors > 10:
+                raise apie
+            api_errors += 1
+            # google measures activity in a 100s window, so wait a bit more on average
+            # add a bit of random to get multiple parallel downloads spread out a bit
+            sleep_seconds = 80 + (80 * random.random())
         except Exception as e:
-            # too many requests per time frame or some API down or so -> wait a bit and try again
+            # some API down or so -> wait a bit and try again
             if overall_tries > 3:
                 raise e
             print(f'Got exception, but will retry again: {e!r}', file=sys.stderr, flush=True)
-            sleep_seconds = 10 * (overall_tries + 1)
-            time.sleep(sleep_seconds)
             overall_tries += 1
-            continue
+            sleep_seconds = 20 * (overall_tries + 1)
+        time.sleep(sleep_seconds)
+        continue
 
     stream = sys.stdout
     nrows = write_rows_as_csv_to_stream(rows,
-                                columns_definition=columns_definition,
-                                stream=stream,
-                                delimiter_char=delimiter_char)
+                                        columns_definition=columns_definition,
+                                        stream=stream,
+                                        delimiter_char=delimiter_char)
     stream.flush()
 
     if fail_on_no_data and nrows == 0:
-            raise ValueError("Received no data rows, failing")
-
+        raise ValueError("Received no data rows, failing")
 
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']
