@@ -142,7 +142,7 @@ def gs_downloader_shell_command(spreadsheet_key: str,
                 _shell_linebreak_escape,
                 _indentions,
                 f" --service-account-client-id='{c.gs_service_account_client_id()}'",
-                f" --service-account-private-key_id='{c.gs_service_account_private_key_id()}'",
+                f" --service-account-private-key-id='{c.gs_service_account_private_key_id()}'",
                 f" --service-account-private-key='{c.gs_service_account_private_key()}'",
                 f" --service-account-client-email='{c.gs_service_account_client_email()}'",
             ])
