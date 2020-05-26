@@ -144,20 +144,18 @@ _NUMERIC_REMOVE_NON_NUMERIC_CHARS = re.compile(r'[^0-9,.]')
 class NumericCellDefinition(CellDefinition):
     """A numeric cell
 
-    The converter will make an effort to guess the right thing from values
-    containing commas and dots (like in '1.000.000,00'). Per default the part
-    after the last . or , is treated as decimals. t.Any other comma/dot is ignored.
-
     Args:
         lower: numeric: the lower bound of the cell
         upper: numeric: the upper bound of the cell
+        thousands_separator: [',' or '.']: if '.' will treat '.' as thousands separator, else ','
         ignore_non_numeric: ignore non-numeric chars (e.g. $%). Accepts "t", "true", True, or 1 as True value,
                             everything else is interpreted as False
     """
 
-    _arguments = ['lower', 'upper', 'ignore_non_numeric']
+    _arguments = ['lower', 'upper', 'thousands_separator', 'ignore_non_numeric']
     lower = None
     upper = None
+    thousands_separator = None
     ignore_non_alpha = None
 
     def converter(self, input: t.Optional[str]) -> t.Union[float, int]:
@@ -171,6 +169,11 @@ class NumericCellDefinition(CellDefinition):
                 return name, True
             else:
                 return name, False
+        if name == 'thousands_separator':
+            if value == '.':
+                return name, '.'
+            else:
+                return name, ','
         return name, self.converter(value)
 
     def validate_and_format_value(self, input: t.Optional[str]) -> str:
@@ -179,12 +182,9 @@ class NumericCellDefinition(CellDefinition):
         if getattr(self, 'ignore_non_numeric', False):
             input = _NUMERIC_REMOVE_NON_NUMERIC_CHARS.sub('', input)
 
-        # workaround for getting "1,0" recognized as "1.0"
+        input = input.replace(self.thousands_separator or ',', '')
+        # if we still have a comma we have a dot as a thousands separator...
         input = input.replace(',', '.')
-        # or even '1.000,00' as '1000.00'
-        _input = input.split('.')
-        if len(_input) > 2:
-            input = ''.join(_input[:-1]) + '.' + _input[-1]
         val = self.converter(input)
         if self.lower is not None:
             if self.lower > val:

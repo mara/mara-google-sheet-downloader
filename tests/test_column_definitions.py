@@ -1,4 +1,5 @@
 from mara_google_sheet_downloader.columns_definition import parse_column_definition, str_, int_, float_
+import pytest
 
 
 def test_parse_column_definition():
@@ -41,38 +42,38 @@ def test_numeric_formatting():
 
     assert float_(lower=1, upper=200)('1.23') == '1.23'
     assert float_(lower=1, upper=200)('1.23 ') == '1.23'
-    assert float_(lower=1, upper=200)('123,4') == '123.4'
-    assert float_(lower=1, upper=200)('1.23,4') == '123.4'
-    assert float_(lower=1, upper=200)('1.23.4') == '123.4'
+    assert float_(lower=1, upper=2000)('123,4') == '1234.0'
+    assert float_(lower=1, upper=2000)('1.23,4') == '1.234'
 
-    try:
+    with pytest.raises(ValueError):
+        float_(lower=1, upper=200)('1.23.4')
+
+    assert float_()('1,23.4') == '123.4'
+    assert float_(thousands_separator='.')('1,23.4') == '1.234'
+
+    # https://github.com/mara/mara-google-sheet-downloader/pull/7
+    assert float_()('1,234') == '1234.0'
+    assert float_(thousands_separator='.')('1.234') == '1234.0'
+    assert int_()('1,234') == '1234'
+    assert int_(thousands_separator='.')('1.234') == '1234'
+
+    with pytest.raises(ValueError):
         float_(lower=1, upper=2)('1.23€')
-        assert False
-    except ValueError:
-        pass
 
-    assert int_(lower=1, upper=200, ignore_non_numeric=True)('1.23,0%') == '123'
-    assert int_(lower=1, upper=200, ignore_non_numeric=True)('1.§$%§%$2,$%&(/§&%(3.0%') == '123'
-    assert float_(lower=1, upper=200, ignore_non_numeric=True)('1.23,4%') == '123.4'
-    assert float_(lower=1, upper=200, ignore_non_numeric=True)('1.§$%§%$2,$%&(/§&%(3.4%') == '123.4'
+    assert int_(lower=1, upper=200, ignore_non_numeric=True)('1.23,0%') == '1'
+    assert int_(lower=1, upper=200, ignore_non_numeric=True)('1,23.0%') == '123'
+    assert int_(lower=1, upper=200, ignore_non_numeric=True)('1,§$%§%$2,$%&(/§&%(3.0%')
+    assert float_(lower=1, upper=200, ignore_non_numeric=True)('1.23,4%') == '1.234'
+    assert float_(lower=1, upper=200, ignore_non_numeric=True)('1,§$%§%$2,$%&(/§&%(3.4%') == '123.4'
 
-    try:
+    with pytest.raises(ValueError):
         float_()('1 23')
-        assert False
-    except ValueError:
-        pass
 
     assert float_()('1.23') == '1.23'
-    try:
+    with pytest.raises(ValueError):
         float_(upper=2)('2.23')
-        assert False
-    except ValueError:
-        pass
-    try:
+    with pytest.raises(ValueError):
         float_(lower=3)('2.23')
-        assert False
-    except ValueError:
-        pass
 
 
 if __name__ == '__main__':
