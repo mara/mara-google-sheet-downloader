@@ -453,4 +453,5 @@ def write_rows_as_csv_to_stream(rows: t.Union[t.Sequence[t.List[str]], t.Iterato
                 raise ValueError(f'Row contains bad data: {row} ({str(e.args)})')
 
             csv_writer.writerow(buf)
+            n_rows += 1
     return n_rows
