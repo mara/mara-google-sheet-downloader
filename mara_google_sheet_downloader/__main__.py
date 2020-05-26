@@ -126,9 +126,16 @@ def gs_download_to_csv(spreadsheet_key: str, worksheet_name: str, columns_defini
             # these happen when the API got too many requests with this credentials in 100 seconds
             # 10 times might be a bit much but this is better than failing just because you have a lot of
             # gs downloads or some local dev loads at the same time
+            # if it has a NOT_FOUND in it it's something else...
+            # apie.response is a response object...
+            if apie.response.status_code in (404,):
+                # 404: the spreadsheet doesn't exist
+                print(f'Aborting: {apie!r}', file=sys.stderr, flush=True)
+                raise apie
             if api_errors > 10:
                 raise apie
             api_errors += 1
+            print(f'Got API Error, but will retry again: {apie!r}', file=sys.stderr, flush=True)
             # google measures activity in a 100s window, so wait a bit more on average
             # add a bit of random to get multiple parallel downloads spread out a bit
             sleep_seconds = 80 + (80 * random.random())
