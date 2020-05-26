@@ -179,9 +179,7 @@ class NumericCellDefinition(CellDefinition):
         if getattr(self, 'ignore_non_numeric', False):
             input = _NUMERIC_REMOVE_NON_NUMERIC_CHARS.sub('', input)
 
-        # workaround for getting "1,0" recognized as "1.0"
-        input = input.replace(',', '.')
-        # or even '1.000,00' as '1000.00'
+        input = input.replace(',', '') # remove thousand splitter
         _input = input.split('.')
         if len(_input) > 2:
             input = ''.join(_input[:-1]) + '.' + _input[-1]
