@@ -3,8 +3,8 @@ import pytest
 
 
 @pytest.fixture
-def mock_data_integration_config(monkeypatch):
-    """Setups the data_integration.config so that it's usable for us"""
+def mock_mara_pipelines_config(monkeypatch):
+    """Setups the mara_pipelines.config so that it's usable for us"""
     import mara_db.dbs
     import mara_db.config
 
@@ -30,7 +30,7 @@ target_table_name = 'public.target_table'
 skip_rows = 3
 
 
-def test_DownloadGoogleSpreadsheet_command_with_flask(mock_data_integration_config):
+def test_DownloadGoogleSpreadsheet_command_with_flask(mock_mara_pipelines_config):
     command = mi.DownloadGoogleSpreadsheet(spreadsheet_key=spreadsheet_key,
                                            worksheet_name=worksheet_name,
                                            columns_definition=columns_definition,
@@ -46,7 +46,7 @@ def test_DownloadGoogleSpreadsheet_command_with_flask(mock_data_integration_conf
     assert shell_command.startswith('flask')
 
 
-def test_DownloadGoogleSpreadsheet_command_with_python(mock_data_integration_config,
+def test_DownloadGoogleSpreadsheet_command_with_python(mock_mara_pipelines_config,
                                                        mock_mara_google_sheet_downloader_config):
     command = mi.DownloadGoogleSpreadsheet(spreadsheet_key=spreadsheet_key,
                                            worksheet_name=worksheet_name,
@@ -67,7 +67,7 @@ def test_DownloadGoogleSpreadsheet_command_with_python(mock_data_integration_con
     assert 'python' in shell_command
 
 
-def test_DownloadGoogleSpreadsheet_command_with_python_without_credentials(mock_data_integration_config):
+def test_DownloadGoogleSpreadsheet_command_with_python_without_credentials(mock_mara_pipelines_config):
     command = mi.DownloadGoogleSpreadsheet(spreadsheet_key=spreadsheet_key,
                                            worksheet_name=worksheet_name,
                                            columns_definition=columns_definition,

@@ -44,8 +44,8 @@ The spreadsheet contains a worksheet 'test' which contains the following colums:
 Note that it doesn't contain an id column at the start!
 
 ```python
-from data_integration.pipelines import Pipeline, Task
-from data_integration.commands.sql import ExecuteSQL
+from mara_pipelines.pipelines import Pipeline, Task
+from mara_pipelines.commands.sql import ExecuteSQL
 from mara_google_sheet_downloader.mara_integration import DownloadGoogleSpreadsheet
 
 pipeline = Pipeline(
