@@ -12,7 +12,7 @@ setup(
     name='mara-google-sheet-downloader',
     version='1.0.0',
 
-    description='Opinionated lightweight ETL pipeline framework',
+    description='Download Google sheets in the mara etl framework',
 
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
