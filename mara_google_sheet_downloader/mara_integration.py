@@ -1,5 +1,4 @@
 import shlex
-import sys
 from mara_pipelines import pipelines
 from mara_pipelines.logging import logger
 import mara_db.shell
@@ -90,8 +89,7 @@ def _invocation(use_flask):
     import mara_google_sheet_downloader.__main__
     main_module = mara_google_sheet_downloader.__name__
     flask_command_name = mara_google_sheet_downloader.__main__.gs_download_to_csv.callback.__name__.replace('_', '-')
-    python = sys.executable
-    invocation = f'flask {main_module}.{flask_command_name}' if use_flask else f'{python} -m {main_module}'
+    invocation = f'flask {main_module}.{flask_command_name}' if use_flask else main_module.replace('_', '-')
     return invocation
 
 
