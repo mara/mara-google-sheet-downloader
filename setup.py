@@ -35,5 +35,8 @@ setup(
     author='Mara contributors',
     license='MIT',
 
-    entry_points={},
+    entry_points='''
+        [console_scripts]
+        mara-google-sheet-downloader=mara_google_sheet_downloader.__main__:gs_download_to_csv
+    ''',
 )

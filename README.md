@@ -125,4 +125,4 @@ credentials. This email address is:
 
 This package contains a small cli app which downloads a google sheet and outputs it as csv.
 
-You can use it stand alone, see `python -m mara_google_sheet_downloader --help ` for how to use it.
+You can use it stand alone, see `mara-google-sheet-downloader --help` for how to use it.
